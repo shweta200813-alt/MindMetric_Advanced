@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Your reflection · MindMetric{% endblock %}
+{% block content %}
+<section class="wrap result-page">
+  <div class="eyebrow">YOUR PERSONAL REFLECTION</div>
+  <h1>Your check-in,<br><em>understood.</em></h1>
+
+  <div class="resulttop">
+    <div class="ring" style="--pct:{{result.percent}}%">
+      <div><b>{{result.percent}}%</b><small>response index</small></div>
+    </div>
+    <div>
+      <small class="eyebrow">YOUR OVERVIEW</small>
+      <h2>{{result.overall}}</h2>
+      <p>{{result.summary}}</p>
+      <small class="muted">Descriptive score of your answers, not a probability of a condition.</small>
+    </div>
+  </div>
+
+  <div class="result-feeling">
+    {% if result.safety_message %}
+      <div class="feeling-emoji" aria-label="A caring hug">🫂</div>
+      <div><span class="feeling-kicker">A GENTLE REMINDER</span><h2>Your safety comes first</h2><p>You deserve care and support. Please reach out to someone you trust.</p></div>
+    {% elif result.percent < 25 %}
+      <div class="feeling-emoji" aria-label="Smiling flower">🌷</div>
+      <div><span class="feeling-kicker">A LITTLE SUNSHINE</span><h2>Keep nurturing your wellbeing</h2><p>Your answers show fewer frequent difficulties. Keep making space for rest, joy and connection.</p></div>
+    {% elif result.percent < 50 %}
+      <div class="feeling-emoji" aria-label="A cheerful flower">🌼</div>
+      <div><span class="feeling-kicker">ONE STEP AT A TIME</span><h2>Small steps count</h2><p>Some difficult moments may be showing up. Be kind to yourself and notice what helps.</p></div>
+    {% elif result.percent < 75 %}
+      <div class="feeling-emoji" aria-label="A cloud and heart">🌦️</div>
+      <div><span class="feeling-kicker">YOU ARE NOT ALONE</span><h2>Give yourself a little extra care</h2><p>Your answers suggest some areas may need attention. Talking with someone supportive can help.</p></div>
+    {% else %}
+      <div class="feeling-emoji" aria-label="A heart held with care">💗</div>
+      <div><span class="feeling-kicker">YOU DESERVE SUPPORT</span><h2>Please be gentle with yourself</h2><p>Your answers indicate frequent difficulties. Consider reaching out to a qualified mental health professional.</p></div>
+    {% endif %}
+  </div>
+
+  <h2 class="subhead">Your wellbeing snapshot</h2>
+  <div class="chartbox"><canvas id="categoryChart"></canvas></div>
+  <div class="breakgrid">
+    {% for name,item in result.breakdown.items() %}
+      <article class="question">
+        <div class="spread"><b>{{name}}</b><span class="tag">{{item.level}}</span></div>
+        <div class="bar"><i style="width:{{item.percent}}%"></i></div>
+        <div class="spread muted"><b>{{item.score}} / {{item.maximum}}</b><span>{{item.percent}}%</span></div>
+        <p class="muted">{{item.note}}</p>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if result.safety_message %}
+    <div class="alert"><b>Support matters. Please read this.</b><p>{{result.safety_message}}</p><p>India emergency assistance: <b>112</b>. Tele-MANAS mental health support: <b>14416</b>.</p></div>
+  {% endif %}
+
+  <h2 class="subhead">Small steps, real care</h2>
+  {% for tip in result.suggestions %}<div class="suggestion">✦　{{tip}}</div>{% endfor %}
+  <div class="notice"><b>Please remember</b><p>A score cannot capture your full experience. If difficulties persist, cause distress or affect daily life, consider speaking with a qualified counsellor, psychologist or doctor. If you are in immediate danger, call 112 in India or visit the nearest emergency department.</p></div>
+  <button class="secondary" onclick="window.print()">Print reflection</button>
+  <a class="primary" href="/">Return home →</a>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const labels={{result.breakdown.keys()|list|tojson}};
+const vals={{result.breakdown.values()|map(attribute='percent')|list|tojson}};
+new Chart(document.getElementById('categoryChart'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:['#a78bfa','#f9a8d4','#fbbf8a','#86cbb4','#8db9f5','#c4a1e8'],borderRadius:10,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0edf7'}},x:{grid:{display:false}}}}});
+</script>
+{% endblock %}
